@@ -1,7 +1,4 @@
-
 // SPDX-License-Identifier: MIT
-// Code Reference: https://medium.com/coinmonks/multisig-wallet-explained-with-code-example-6fb4a663ab29
-
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
@@ -19,9 +16,9 @@ contract MultiSigWallet is ReentrancyGuard {
     event RevokeConfirmation(address indexed owner, uint indexed txIndex);
     event ExecuteTransaction(address indexed owner, uint indexed txIndex);
 
-    address[3] public owners;
+    address[] public owners;
     mapping(address => bool) public isOwner;
-    uint public constant NUM_CONFIRMATIONS_REQUIRED = 2;
+    uint public numConfirmationsRequired;
 
     struct Transaction {
         address to;
@@ -56,19 +53,20 @@ contract MultiSigWallet is ReentrancyGuard {
         _;
     }
 
-    constructor(address[3] memory _owners) {
-        require(_owners[0] != address(0) && 
-                _owners[1] != address(0) && 
-                _owners[2] != address(0), "invalid owner");
-                
-        require(_owners[0] != _owners[1] && 
-                _owners[1] != _owners[2] && 
-                _owners[0] != _owners[2], "owner not unique");
+    constructor(address[] memory _owners) {
+        require(_owners.length == 3, "requires exactly 3 owners");
 
-        for (uint i = 0; i < 3; i++) {
-            isOwner[_owners[i]] = true;
-            owners[i] = _owners[i];
+        for (uint i = 0; i < _owners.length; i++) {
+            address owner = _owners[i];
+
+            require(owner != address(0), "invalid owner");
+            require(!isOwner[owner], "owner not unique");
+
+            isOwner[owner] = true;
+            owners.push(owner);
         }
+
+        numConfirmationsRequired = 2;  // Fixed at 2 confirmations
     }
 
     receive() external payable {
@@ -79,7 +77,7 @@ contract MultiSigWallet is ReentrancyGuard {
         address _to,
         uint _value,
         bytes memory _data
-    ) public onlyOwner returns (uint) {
+    ) public onlyOwner {
         uint txIndex = transactions.length;
 
         transactions.push(
@@ -93,7 +91,6 @@ contract MultiSigWallet is ReentrancyGuard {
         );
 
         emit SubmitTransaction(msg.sender, txIndex, _to, _value, _data);
-        return txIndex;
     }
 
     function confirmTransaction(
@@ -112,7 +109,7 @@ contract MultiSigWallet is ReentrancyGuard {
         Transaction storage transaction = transactions[_txIndex];
 
         require(
-            transaction.numConfirmations >= NUM_CONFIRMATIONS_REQUIRED,
+            transaction.numConfirmations >= numConfirmationsRequired,
             "cannot execute tx"
         );
 
@@ -139,7 +136,7 @@ contract MultiSigWallet is ReentrancyGuard {
         emit RevokeConfirmation(msg.sender, _txIndex);
     }
 
-    function getOwners() public view returns (address[3] memory) {
+    function getOwners() public view returns (address[] memory) {
         return owners;
     }
 
