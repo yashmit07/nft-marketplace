@@ -1,2 +1,2 @@
 # nft-marketplace
-Upgradeable NFT marketplace with multisig governance built on Base
+Upgradeable NFT marketplace with multisig governance built on Sepolia
