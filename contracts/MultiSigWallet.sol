@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Code Reference: https://medium.com/coinmonks/multisig-wallet-explained-with-code-example-6fb4a663ab29 
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.22;
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 

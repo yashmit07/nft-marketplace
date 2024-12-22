@@ -2,7 +2,7 @@
 // Referece: https://medium.com/coinmonks/how-to-create-erc-721-nfts-on-ethereum-with-openzeppelin-a-step-by-step-tutorial-47b252843dd9 
 // Code Reference: https://wizard.openzeppelin.com/#erc721 
 
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.22;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";
@@ -40,7 +40,7 @@ contract NFT is
     error InvalidMultiSigAddress();
 
     modifier onlyMultiSigOwner() {
-        if (!IMultiSigWallet(multiSigWallet).isOwner(msg.sender)) 
+        if (msg.sender != multiSigWallet && !IMultiSigWallet(multiSigWallet).isOwner(msg.sender)) 
             revert NotMultiSigOwner();
         _;
     }
